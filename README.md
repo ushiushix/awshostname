@@ -2,7 +2,7 @@
 
 ## Introduction
 When you launch EC2 instances, you will attach some tags on it. You can "describe" them and filter by tags to obtain public hostname to do ssh.
-This tools helps you to set up ~/.ssh/config.
+This tool helps you to set up ~/.ssh/config.
 
 ## Usage
 
