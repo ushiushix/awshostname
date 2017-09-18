@@ -39,10 +39,10 @@ func parseTags(filters []*ec2.Filter, input *string, spec *HostSpec) ([]*ec2.Fil
 func replacePositional(s string, spec *HostSpec) (string, error) {
 	if len(s) > 1 && s[0] == '#' {
 		i, err := strconv.Atoi(s[1:])
-		if err != nil {
-			return s, err
+		if err != nil || i < 0 {
+			return s, fmt.Errorf("Invalid component index in %s", s)
 		}
-		if i < 0 || i >= len(spec.Names) {
+		if i >= len(spec.Names) {
 			return s, fmt.Errorf("No %d'th component exists", i)
 		}
 		s = spec.Names[i]
@@ -83,12 +83,12 @@ func parseHostName(s *string) (*HostSpec, error) {
 	h.Names = strings.Split(*s, ".")
 	idx := strings.Index(h.Names[0], "#")
 	if idx >= 0 {
-		if idx >= len(*s)-1 {
+		if idx >= len(h.Names[0])-1 {
 			return nil, fmt.Errorf("No index after '#'")
 		}
 		i, err := strconv.Atoi(h.Names[0][(idx + 1):])
-		if err != nil {
-			return nil, err
+		if err != nil || i < 0 {
+			return nil, fmt.Errorf("Invalid host index in %s", h.Names[0])
 		}
 		h.Index = i
 		substr := h.Names[0][0:(idx)]
