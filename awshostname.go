@@ -102,10 +102,12 @@ func main() {
 	var flagTags string
 	var flagRegion string
 	var flagProfile string
+	var flagDebug bool
 	flag.Usage = usage
 	flag.StringVar(&flagTags, "t", "", "Tags to filter the instances. TAG=VALUE,TAG=VALUE...")
 	flag.StringVar(&flagRegion, "r", "", "AWS region to search in")
 	flag.StringVar(&flagProfile, "p", "default", "Profile to use")
+	flag.BoolVar(&flagDebug, "d", false, "Show debug information")
 	flag.Parse()
 	if flag.NArg() != 1 {
 		usage()
@@ -125,6 +127,10 @@ func main() {
 		os.Exit(1)
 	}
 	filters = addFilter(filters, "instance-state-name", "running")
+	if flagDebug {
+		fmt.Println("Filters:")
+		fmt.Println(filters)
+	}
 	sessionOptions := session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 		Profile:           flagProfile,
@@ -154,6 +160,10 @@ func main() {
 	instances := make(EC2Instances, len(result.Reservations[0].Instances))
 	copy(instances, result.Reservations[0].Instances)
 	sort.Sort(instances)
+	if flagDebug {
+		fmt.Println("Instances:")
+		fmt.Println(instances)
+	}
 	if index == -1 {
 		if len(instances) > 1 {
 			fmt.Fprintf(os.Stderr, "Error: %d hosts matches\n", len(instances))
