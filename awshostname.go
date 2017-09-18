@@ -42,7 +42,7 @@ func replacePositional(s string, spec *HostSpec) (string, error) {
 		if err != nil {
 			return s, err
 		}
-		if i >= len(spec.Names) {
+		if i < 0 || i >= len(spec.Names) {
 			return s, fmt.Errorf("No %d'th component exists", i)
 		}
 		s = spec.Names[i]
