@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
@@ -14,18 +13,18 @@ import (
 )
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "Usage: %s [options] <pattern>\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "Usage: %s [options] <hostname>\n", os.Args[0])
 	flag.PrintDefaults()
 }
 
 func parseTags(filters []*ec2.Filter, input *string, spec *HostSpec) ([]*ec2.Filter, error) {
 	if len(*input) == 0 {
-		return filters, errors.New("At least one tag is required")
+		return filters, nil
 	}
 	tagPairs := strings.Split(*input, ",")
 	for _, pair := range tagPairs {
 		kv := strings.Split(pair, "=")
-		if len(kv) != 2 {
+		if len(kv) != 2 || len(kv[0]) == 0 || len(kv[1]) == 0 {
 			return filters, fmt.Errorf("Invalid tag spec: %s", pair)
 		}
 		v, err := replacePositional(kv[1], spec)
