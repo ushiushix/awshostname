@@ -58,20 +58,6 @@ func addFilter(filters []*ec2.Filter, name string, value string) []*ec2.Filter {
 	return filters
 }
 
-type EC2Instances []*ec2.Instance
-
-func (instances EC2Instances) Len() int {
-	return len(instances)
-}
-
-func (instances EC2Instances) Swap(i, j int) {
-	instances[i], instances[j] = instances[j], instances[i]
-}
-
-func (instances EC2Instances) Less(i, j int) bool {
-	return (*instances[i].LaunchTime).Before(*instances[j].LaunchTime)
-}
-
 type HostSpec struct {
 	Names []string
 	Index int
@@ -153,16 +139,22 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
 		os.Exit(1)
 	}
-	if len(result.Reservations) == 0 || len(result.Reservations[0].Instances) == 0 {
-		fmt.Fprintf(os.Stderr, "Error: No matching host\n")
-		os.Exit(1)
+	instances := make([]*ec2.Instance, 0)
+	for _, rsv := range result.Reservations {
+		for _, ins := range rsv.Instances {
+			instances = append(instances, ins)
+		}
 	}
-	instances := make(EC2Instances, len(result.Reservations[0].Instances))
-	copy(instances, result.Reservations[0].Instances)
-	sort.Sort(instances)
+	sort.Slice(instances, func(i, j int) bool {
+		return (*instances[i].LaunchTime).Before(*instances[j].LaunchTime)
+	})
 	if flagDebug {
 		fmt.Println("Instances:")
 		fmt.Println(instances)
+	}
+	if len(instances) == 0 {
+		fmt.Fprintf(os.Stderr, "Error: No matching host\n")
+		os.Exit(1)
 	}
 	if index == -1 {
 		if len(instances) > 1 {
