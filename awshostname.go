@@ -13,7 +13,7 @@ import (
 )
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "Usage: %s [options] <hostname>\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "Usage: %s [options] [HostSpec]\n", os.Args[0])
 	flag.PrintDefaults()
 }
 
@@ -63,10 +63,15 @@ type HostSpec struct {
 	Index int
 }
 
-func parseHostName(s *string) (*HostSpec, error) {
+func parseHostSpec(s *string) (*HostSpec, error) {
 	var h HostSpec
 	h.Index = -1
-	h.Names = strings.Split(*s, ".")
+	if len(*s) > 0 {
+		h.Names = strings.Split(*s, ".")
+	} else {
+		h.Names = []string{}
+		return &h, nil
+	}
 	idx := strings.Index(h.Names[0], "#")
 	if idx >= 0 {
 		if idx >= len(h.Names[0])-1 {
@@ -95,12 +100,15 @@ func main() {
 	flag.StringVar(&flagProfile, "p", "default", "Profile to use")
 	flag.BoolVar(&flagDebug, "d", false, "Show debug information")
 	flag.Parse()
-	if flag.NArg() != 1 {
+	if flag.NArg() > 1 {
 		usage()
 		os.Exit(1)
 	}
-	hostName := flag.Args()[0]
-	spec, err := parseHostName(&hostName)
+	host := ""
+	if flag.NArg() == 1 {
+		host = flag.Args()[0]
+	}
+	spec, err := parseHostSpec(&host)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s\n", err.Error())
 		os.Exit(1)
