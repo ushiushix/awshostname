@@ -37,15 +37,9 @@ func parseTags(filters []*ec2.Filter, input *string, spec *HostSpec) ([]*ec2.Fil
 }
 
 func replacePositional(s string, spec *HostSpec) (string, error) {
-	if len(s) > 1 && s[0] == '#' {
-		i, err := strconv.Atoi(s[1:])
-		if err != nil || i < 0 {
-			return s, fmt.Errorf("Invalid component index in %s", s)
-		}
-		if i >= len(spec.Names) {
-			return s, fmt.Errorf("No %d'th component exists", i)
-		}
-		s = spec.Names[i]
+	for i := len(spec.Names) - 1; i >= 0; i-- {
+		pos := fmt.Sprintf("#%d", i)
+		s = strings.Replace(s, pos, spec.Names[i], -1)
 	}
 	return s, nil
 }
