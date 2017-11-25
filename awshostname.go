@@ -12,6 +12,8 @@ import (
 	"strings"
 )
 
+const Version = "0.0.1"
+
 func usage() {
 	fmt.Fprintf(os.Stderr, "Usage: %s [options] [HostSpec]\n", os.Args[0])
 	flag.PrintDefaults()
@@ -93,7 +95,12 @@ func main() {
 	flag.StringVar(&flagRegion, "r", "", "AWS region to search in")
 	flag.StringVar(&flagProfile, "p", "default", "Profile to use")
 	flag.BoolVar(&flagDebug, "d", false, "Show debug information")
+	flagVer := flag.Bool("v", false, "Prints version")
 	flag.Parse()
+	if *flagVer {
+		fmt.Printf("%s\n", Version)
+		os.Exit(0)
+	}
 	if flag.NArg() > 1 {
 		usage()
 		os.Exit(1)
